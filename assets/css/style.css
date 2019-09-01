@@ -1,0 +1,22 @@
+.thumbnail-wrapper button {
+    position:absolute;
+    top:10%;
+    left:75%;
+    -webkit-transform:translate3d(-50%, -50%, 0);
+    -moz-transform:translate3d(-50%, -50%, 0);
+    transform:translate3d(-50%, -50%, 0);
+}
+
+.breaking-style {
+	background-color: black; 
+	color: white;
+}
+
+.cursorPointer {
+	cursor: pointer;
+}
+
+.black {
+	background-color: black; 
+	color: white;
+}

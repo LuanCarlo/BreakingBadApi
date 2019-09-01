@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html ng-app="pw2App">
+   <head>
+      <title> PW2 - Exerc&iacute;cio Angular 5 </title>
+     <meta charset="iso-8859-1" />
+	 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	  
+	 <!-- Importando CSS -->
+     <link href="assets/css/bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet" />
+     <link href="assets/css/style.css" rel="stylesheet" />
+     <link href="assets/css/fonta-wesome/css/fontawesome.min.css" rel="stylesheet">
+
+
+	 <!-- Importando jQuery 1.31 -->
+	 <script src="assets/css/bootstrap-3.3.6-dist/js/jquery-1.12.1.min.js"></script>
+	 <!-- Importando códigos JS do Bootstrap -->
+	 <script src="assets/css/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+	  
+	  <script src="assets/javascript/angular.min.js"> </script>
+	  <script>
+	    var app = angular.module('pw2App',[]);
+		
+		app.service('BreakingBadService',function(){
+			
+		});		
+		
+		app.controller('BreakingBadControler',[
+			'$scope',
+			'$http',
+			'BreakingBadService',
+			function(
+				$scope,
+				$http,
+				serv
+			){
+				$scope.dados = null;
+
+				$scope.pagina = {
+					inicio : 0,
+					limite : 12
+				}
+
+
+				$scope.getNumeroPaginas = function () {
+
+					$http.get('https://breakingbadapi.com/api/characters').then(
+					function (response) {
+
+						$scope.total = response.data.length;
+
+						$scope.numeroDePaginas = Math.round($scope.total / 12);
+						$scope.paginas = [];
+
+						var ini = 0;
+						var fim = 12;
+						for (var i = 0; i < $scope.numeroDePaginas; i++) {
+
+							var pagina = {
+								numero : i+1,
+								inicio : ini,
+								fim : fim
+							};
+						   	$scope.paginas.push(pagina);
+							ini+=12;
+						    fim += 12;
+						}
+					});
+				};
+
+				$scope.loadPersonagens = function (limite, inicio) {
+					$http.get('https://breakingbadapi.com/api/characters?limit='+limite + '&offset='+inicio).then(
+					function (response) {
+
+						$scope.personagens = response.data;
+					});
+				}
+				
+			   
+			   $scope.getPersonagem = function(nome){
+
+			   		var nome = nome.replace(" ", "+");
+
+			  		$http.get('https://breakingbadapi.com/api/characters?name='+nome).then(
+					function (response) {
+
+						$scope.personagens = response.data;
+					});
+			   };
+
+			   $scope.clearFilter = function(){
+			   		delete($scope.filter.nome);
+			   		$scope.pagina = {
+						inicio : 0,
+						limite : 12
+					}
+			   		$scope.loadPersonagens();
+			   };
+
+			   $scope.getNumeroPaginas();
+			   $scope.loadPersonagens($scope.pagina.limite,$scope.pagina.inicio);
+		}]);	
+
+	  </script>
+   </head>
+   <body class="breaking-style">
+		   <div class="container" ng-controller="BreakingBadControler" style="padding: 1px; padding-top: 2%;">
+			  	<nav class="navbar">
+				  	
+					<form class="form-inline">
+						<div class="col-sm-6">
+							<img src="assets/images/logo.png" class="bd-placeholder-img card-img-top cursorPointer" width="25%" height="25%" ng-click="loadPersonagens(12,0)"> </img>
+						</div>
+						<div class="col-sm-6">
+							<div style="padding-top: 4%;">
+
+								<button ng-if="filter.nome" class="btn btn-danger pull-right" ng-click="loadPersonagens(12,0)" type="submit">  
+								<span aria-hidden="true">&times;</span>
+								</button>
+								<button class="btn pull-right" style="color: white; background-color: black;"  ng-click="getPersonagem(filter.nome)" type="submit"><span style="font-size: 18px;">🔎</span></button>
+								<input class="form-control pull-right black" type="search"  placeholder="Pesquise os personagens" aria-label="Pesquise os personagens" ng-model="filter.nome">
+							</div>
+						</div>
+					</form>
+				</nav>
+				    
+				<div class="row" ng-if="personagens.length > 0">
+					<div class="col-sm-3" style="padding: 1%;" ng-repeat="personagem in personagens">
+						<div class="card">
+							<div class="thumbnail-wrapper">
+							    <img src="{{personagem.img}}" class="bd-placeholder-img card-img-top" width="100%" height="225"> </img>
+
+							   <button class="btn btn-success" ng-if="personagem.status == 'Alive'" style="width: 120px;">{{personagem.status}}</button>
+							   <button class="btn btn-warning" ng-if="personagem.status != 'Alive'" style="width: 120px;">{{personagem.status}}</button>
+							</div>
+							<div class="card-body">
+								<h4 class="card-title">{{personagem.name}}</h4>
+									<p class="card-text" style="font-size: 10px;">*{{personagem.birthday}}</p>
+									<p class="card-text" style="font-size: 10px;">
+										{{personagem.occupation[0]}}<span ng-if="personagem.occupation[1]">, {{personagem.occupation[1]}}</span>
+									</p>
+						    </div>
+					    </div>
+				    </div>
+		  		</div>
+
+				<div ng-if="personagens.length > 0" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups" style=";align-self: center; position:absolute;left:45%; background-color: black;" >
+				  <div class="btn-group mr-2" style="background-color: black" role="group" aria-label="First group" >
+				    <button type="button" class="btn btn-secondary" style="background-color: black" ng-repeat="pagina in paginas" ng-click="loadPersonagens(pagina.fim,pagina.inicio)">{{pagina.numero}}</button>
+				  </div>
+				</div>
+
+		  		<div class="row" ng-if="personagens.length == 0">
+					<div class="alert alert-danger" role="alert">
+					  Desculpe, nenhum personagem com este nome foi encontrado!
+					  <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="loadPersonagens(12,0)">
+					    <span aria-hidden="true">&times;</span>
+					  </button>
+					</div>
+		  		</div>
+			</div>
+
+   </body>
+</html>
